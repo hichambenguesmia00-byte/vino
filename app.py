@@ -23,7 +23,7 @@ def check():
         return title
 
     try:
-        title = asyncio.get_event_loop().run_until_complete(run())
+        title = asyncio.run(run())
         return f"🌍 Page title: {title}"
     except Exception as e:
         return f"❌ Error in /check: {str(e)}"
