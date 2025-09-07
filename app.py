@@ -1,9 +1,6 @@
 from flask import Flask
 import asyncio
-import nest_asyncio
-
-# حل مشكلة event loop مع Flask
-nest_asyncio.apply()
+from playwright.async_api import async_playwright
 
 app = Flask(__name__)
 
@@ -14,17 +11,16 @@ def home():
 @app.route("/check")
 def check():
     async def run():
-        from pyppeteer import launch
-        browser = await launch(headless=True, args=['--no-sandbox'])
-        page = await browser.newPage()
-        await page.goto("https://www.google.com", timeout=20000)
-        title = await page.title()
-        await browser.close()
-        return title
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+            page = await browser.new_page()
+            await page.goto("https://www.google.com", timeout=20000)
+            title = await page.title()
+            await browser.close()
+            return title
 
     try:
-        loop = asyncio.get_event_loop()
-        title = loop.run_until_complete(run())
+        title = asyncio.run(run())
         return f"🌍 Page title: {title}"
     except Exception as e:
         return f"❌ Error in /check: {str(e)}"
