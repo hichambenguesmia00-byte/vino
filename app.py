@@ -6,22 +6,23 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "✅ Flask + Pyppeteer running!"
+    return "✅ السيرفر يخدم"
 
 @app.route("/check")
 def check():
-    async def run():
-        # تشغيل المتصفح بدون sandbox (إلزامي في Render)
-        browser = await launch(headless=True, args=['--no-sandbox'])
-        page = await browser.newPage()
-        await page.goto("https://www.google.com", timeout=30000)
-        title = await page.title()
-        await browser.close()
-        return title
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(run_browser())
+        return f"🌍 النتيجة: {result}"
+    except Exception as e:
+        # هنا يرجع الخطأ الحقيقي في الصفحة
+        return f"❌ Error: {str(e)}"
 
-    loop = asyncio.get_event_loop()
-    title = loop.run_until_complete(run())
-    return f"🌍 Title: {title}"
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+async def run_browser():
+    browser = await launch(headless=True, args=['--no-sandbox'])
+    page = await browser.newPage()
+    await page.goto("https://www.google.com", timeout=20000)
+    title = await page.title()
+    await browser.close()
+    return title
